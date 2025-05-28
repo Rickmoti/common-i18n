@@ -5,24 +5,21 @@
 ### i18n-example
 多语言例子
 
+# 项目启动与设置
 
-# 项目启动
+## 数据库设置
 
-新建数据结构
-```
-CREATE TABLE `i18n_message` (
-`id` int NOT NULL AUTO_INCREMENT,
-`type` varchar(10) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '词条类型',
-`code` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '词条',
-`text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin COMMENT '词条对应的多语言内容',
-`language` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT '' COMMENT '语言',
-`created_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-`updated_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin`
-```
+项目包含一个数据库初始化脚本 `i18n-example/src/main/resources/schema.sql`。
+此脚本包含了创建以下表格所需的SQL语句：
+- `i18n_message`: 用于存储国际化词条。
+- `t_goods`: 示例商品表。
 
-i18n-example中案例初始化数据（可选）
+您可以使用任何MySQL兼容的数据库客户端或管理工具来执行此 `schema.sql` 文件，以搭建项目所需的数据库结构。
+该脚本会创建 `i18n_message` 和 `t_goods` 表。
+
+**注意：** 原 `README.md` 中提供的 `CREATE TABLE` 语句与 `schema.sql` 中的定义可能存在差异。请以 `schema.sql` 文件为准。
+
+### i18n-example中案例初始化数据（可选）
 ```
 INSERT INTO `i18n`.`i18n_message`(`id`, `type`, `code`, `text`, `language`, `created_time`, `updated_time`) VALUES (1, 'Constant', '男', 'Male', 'zh_CN', now(), now());
 INSERT INTO `i18n`.`i18n_message`(`id`, `type`, `code`, `text`, `language`, `created_time`, `updated_time`) VALUES (2, 'ErrorCode', '1000', 'Params error', 'en_US', now(), now());
@@ -53,6 +50,14 @@ i18n.flag=true
 
 启动后postman测试集在postman文件下，可以导入postman后测试接口场景
 
+## 测试
+
+项目使用 JUnit 5 和 Mockito 进行单元测试。相关的测试依赖已在各模块的 `build.gradle` 文件中配置完毕。
+您可以使用标准的Gradle命令来运行测试，例如：
+```bash
+./gradlew test
+```
+或者在IDE中直接运行测试类。
 
 # 实现介绍
 ### 常量多语言
