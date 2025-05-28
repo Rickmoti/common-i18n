@@ -27,7 +27,7 @@ public class DatabaseFieldsExampleController {
 
     // If TestService is still needed for other things, keep it.
     // @Resource
-    // private TestService testService; 
+    // private TestService testService;
 
     // POST endpoint to create Goods with translations
     @PostMapping("/goods")
@@ -51,7 +51,7 @@ public class DatabaseFieldsExampleController {
         Map<String, Object> data = goodsService.getGoodsWithAllTranslations(id);
         if (data == null) {
             // Consider returning a 404 or a specific error structure
-            return BaseResult.<Map<String, Object>>builder().code("404").message("Goods not found").build();
+            return BaseResult.<Map<String, Object>>builder().code(404).message("Goods not found").build();
         }
         return BaseResult.<Map<String, Object>>builder().data(data).build();
     }

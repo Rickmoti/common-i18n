@@ -38,7 +38,7 @@ public class GoodsService {
     @Transactional
     public Goods createGoods(Goods goods, Map<String, Map<String, String>> allFieldTranslations) {
         // Save the main entity first to get its ID (if auto-generated)
-        goodsDao.insert(goods); // Assumes GoodsDao extends BaseMapper or has an insert method
+        goodsDao.save(goods); // Assumes GoodsDao extends BaseMapper or has an insert method
 
         // Check if the entity is annotated for I18N and if an ID is available
         I18nResource i18nResource = AnnotationUtils.findAnnotation(Goods.class, I18nResource.class);
@@ -49,7 +49,7 @@ public class GoodsService {
 
         String prefix = i18nResource.prefix();
         // The identityKey for Goods is "id", so its value is goods.getId()
-        String identityValue = goods.getId().toString(); 
+        String identityValue = goods.getId().toString();
 
         if (allFieldTranslations != null) {
             for (Map.Entry<String, Map<String, String>> entry : allFieldTranslations.entrySet()) {
@@ -104,7 +104,7 @@ public class GoodsService {
      * @return The Goods entity, or null if not found.
      */
     public Goods findGoodsById(Long id) {
-        return goodsDao.selectById(id); // Assumes GoodsDao extends BaseMapper
+        return goodsDao.getById(id); // Assumes GoodsDao extends BaseMapper
     }
 
     /**
@@ -132,7 +132,7 @@ public class GoodsService {
         }
 
         String prefix = i18nResource.prefix();
-        String identityValue = goods.getId().toString(); 
+        String identityValue = goods.getId().toString();
 
         Map<String, Map<String, String>> allTranslations = new HashMap<>();
         // Iterate over the fields defined in @I18nResource to ensure we only fetch for configured fields
@@ -155,6 +155,6 @@ public class GoodsService {
     public List<Goods> getAllGoods() {
         // Assuming goodsDao.selectList(null) fetches all records.
         // If using a more specific query (e.g., QueryWrapper), adjust accordingly.
-        return goodsDao.selectList(null);
+        return goodsDao.list(null);
     }
 }
