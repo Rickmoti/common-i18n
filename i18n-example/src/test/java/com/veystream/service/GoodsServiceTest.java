@@ -30,8 +30,8 @@ import static org.mockito.Mockito.*;
 
 // Simulate the @I18nResource annotation for Goods
 @I18nResource(
-    prefix = "Goods", 
-    identityKey = "id", 
+    prefix = "Goods",
+    identityKey = "id",
     i18nFields = {
         @I18nField(fieldName = "name"),
         @I18nField(fieldName = "description")
@@ -60,7 +60,7 @@ public class GoodsServiceTest {
         testGoods.setId(1L);
         testGoods.setName("Default Name");
         testGoods.setDescription("Default Description");
-        
+
         // Get the annotation from our mocked class
         goodsI18nResource = AnnotationUtils.findAnnotation(MockedGoods.class, I18nResource.class);
     }
@@ -69,7 +69,7 @@ public class GoodsServiceTest {
     void createGoods_shouldSaveGoodsAndTranslations() {
         Goods newGoods = new Goods(); // No ID initially
         newGoods.setName("Test Name");
-        
+
         Map<String, Map<String, String>> allTranslations = new HashMap<>();
         Map<String, String> nameTranslations = new HashMap<>();
         nameTranslations.put("en_US", "English Name");
@@ -81,7 +81,7 @@ public class GoodsServiceTest {
             Goods g = invocation.getArgument(0);
             g.setId(2L); // Simulate ID generation
             return null;
-        }).when(goodsDao).insert(any(Goods.class));
+        }).when(goodsDao).save(any(Goods.class));
 
         try (MockedStatic<AnnotationUtils> mockedAnnotationUtils = Mockito.mockStatic(AnnotationUtils.class)) {
             mockedAnnotationUtils.when(() -> AnnotationUtils.findAnnotation(eq(Goods.class), eq(I18nResource.class)))
@@ -89,7 +89,7 @@ public class GoodsServiceTest {
 
             goodsService.createGoods(newGoods, allTranslations);
 
-            verify(goodsDao).insert(newGoods);
+            verify(goodsDao).save(newGoods);
             assertNotNull(newGoods.getId()); // Check if ID was set
 
             // Verify I18nDataService was called for "name" field
@@ -102,7 +102,7 @@ public class GoodsServiceTest {
             );
         }
     }
-    
+
     @Test
     void createGoods_shouldNotSaveTranslationsIfNoAnnotation() {
         Goods newGoods = new Goods();
@@ -114,8 +114,8 @@ public class GoodsServiceTest {
                                  .thenReturn(null); // Simulate no annotation
 
             goodsService.createGoods(newGoods, allTranslations);
-            
-            verify(goodsDao).insert(newGoods);
+
+            verify(goodsDao).save(newGoods);
             verify(i18nDataService, never()).saveOrUpdateTranslations(any(), any(), any(), any(), any());
         }
     }
@@ -127,7 +127,7 @@ public class GoodsServiceTest {
         Map<String, String> descriptionTranslations = new HashMap<>();
         descriptionTranslations.put("fr_FR", "Description en français");
         allTranslations.put("description", descriptionTranslations);
-        
+
         testGoods.setDescription("New Default Description"); // Simulate an update to the main entity
 
         try (MockedStatic<AnnotationUtils> mockedAnnotationUtils = Mockito.mockStatic(AnnotationUtils.class)) {
@@ -146,7 +146,7 @@ public class GoodsServiceTest {
             );
         }
     }
-    
+
     @Test
     void updateGoods_shouldThrowExceptionIfIdIsNull() {
         Goods goodsWithoutId = new Goods();
@@ -158,22 +158,22 @@ public class GoodsServiceTest {
 
     @Test
     void findGoodsById_shouldReturnGoods() {
-        when(goodsDao.selectById(1L)).thenReturn(testGoods);
+        when(goodsDao.getById(1L)).thenReturn(testGoods);
         Goods found = goodsService.findGoodsById(1L);
         assertSame(testGoods, found);
     }
 
     @Test
     void getGoodsWithAllTranslations_shouldReturnEntityAndTranslations() {
-        when(goodsDao.selectById(1L)).thenReturn(testGoods);
-        
+        when(goodsDao.getById(1L)).thenReturn(testGoods);
+
         Map<String, String> nameTranslations = Collections.singletonMap("en_US", "English Name");
         Map<String, String> descTranslations = Collections.singletonMap("en_US", "English Description");
 
         try (MockedStatic<AnnotationUtils> mockedAnnotationUtils = Mockito.mockStatic(AnnotationUtils.class)) {
             mockedAnnotationUtils.when(() -> AnnotationUtils.findAnnotation(eq(Goods.class), eq(I18nResource.class)))
                                  .thenReturn(goodsI18nResource);
-            
+
             // Mock calls for each field defined in MockedGoods's @I18nResource
             when(i18nDataService.getTranslationsForField(eq(testGoods.getId().toString()), eq(goodsI18nResource.prefix()), eq("name")))
                 .thenReturn(nameTranslations);
@@ -188,30 +188,30 @@ public class GoodsServiceTest {
             assertNotNull(translations);
             assertEquals(nameTranslations, translations.get("name"));
             assertEquals(descTranslations, translations.get("description"));
-            
+
             // Ensure it iterated through the fields in the annotation
             verify(i18nDataService).getTranslationsForField(anyString(), anyString(), eq("name"));
             verify(i18nDataService).getTranslationsForField(anyString(), anyString(), eq("description"));
         }
     }
-    
+
     @Test
     void getGoodsWithAllTranslations_shouldReturnNullIfEntityNotFound() {
-        when(goodsDao.selectById(anyLong())).thenReturn(null);
+        when(goodsDao.getById(anyLong())).thenReturn(null);
         Map<String, Object> result = goodsService.getGoodsWithAllTranslations(99L);
         assertNull(result);
     }
-    
+
     @Test
     void getGoodsWithAllTranslations_shouldReturnEmptyTranslationsIfNotI18nResource() {
-         when(goodsDao.selectById(1L)).thenReturn(testGoods);
-         
+         when(goodsDao.getById(1L)).thenReturn(testGoods);
+
         try (MockedStatic<AnnotationUtils> mockedAnnotationUtils = Mockito.mockStatic(AnnotationUtils.class)) {
             mockedAnnotationUtils.when(() -> AnnotationUtils.findAnnotation(eq(Goods.class), eq(I18nResource.class)))
                                  .thenReturn(null); // Simulate no annotation
 
             Map<String, Object> result = goodsService.getGoodsWithAllTranslations(1L);
-            
+
             assertNotNull(result);
             assertSame(testGoods, result.get("entity"));
             Map<String, Map<String, String>> translations = (Map<String, Map<String, String>>) result.get("translations");
@@ -222,12 +222,12 @@ public class GoodsServiceTest {
     @Test
     void getAllGoods_shouldReturnListOfGoods() {
         List<Goods> goodsList = Arrays.asList(testGoods, new Goods());
-        when(goodsDao.selectList(null)).thenReturn(goodsList);
+        when(goodsDao.list(null)).thenReturn(goodsList);
 
         List<Goods> result = goodsService.getAllGoods();
 
         assertEquals(2, result.size());
         assertSame(goodsList, result);
-        verify(goodsDao).selectList(null);
+        verify(goodsDao).list(null);
     }
 }
