@@ -286,6 +286,12 @@ The `com.veystream.controller.DatabaseFieldsExampleController` provides REST end
 *   `PUT /example/goods/{id}`: Updates an existing `Goods` item and its translations.
     *   Request Body: `GoodsUpdatePayload` (contains `Goods` entity and translations map).
 *   `GET /example/goods/{id}`: Retrieves a `Goods` item along with all its translations.
+*   `GET /example/goods/search?keyword={searchText}`: 根据关键词进行多语言模糊搜索。
+    *   **搜索逻辑**:
+        1.  优先在**当前请求语言**的翻译文本（存储于 `i18n_message` 表）中搜索商品的所有已配置国际化字段（如名称、描述等）。
+        2.  同时，在商品表 (`t_goods`) 中的**默认语言**文本中搜索这些字段。
+        3.  返回两个搜索结果的并集（商品不重复）。
+    *   `keyword` 是可选参数。如果未提供或为空，则返回所有商品。
 *   `GET /example/databaseFields`: Retrieves a list of all `Goods` (default language values, translations applied by `I18nInterceptor` based on current locale and `MessageSource`).
 
 ### 4. Translation Data Storage

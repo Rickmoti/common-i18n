@@ -27,7 +27,7 @@ public class DatabaseFieldsExampleController {
 
     // If TestService is still needed for other things, keep it.
     // @Resource
-    // private TestService testService;
+    // private TestService testService; 
 
     // POST endpoint to create Goods with translations
     @PostMapping("/goods")
@@ -46,24 +46,14 @@ public class DatabaseFieldsExampleController {
     }
 
     // GET endpoint to retrieve Goods with all its translations
-    @GetMapping("/getGoodsWithTranslations/{id}")
+    @GetMapping("/goods/{id}")
     public BaseResult<Map<String, Object>> getGoodsWithTranslations(@PathVariable Long id) {
         Map<String, Object> data = goodsService.getGoodsWithAllTranslations(id);
         if (data == null) {
             // Consider returning a 404 or a specific error structure
-            return BaseResult.<Map<String, Object>>builder().code(404).message("Goods not found").build();
+            return BaseResult.<Map<String, Object>>builder().code("404").message("Goods not found").build();
         }
         return BaseResult.<Map<String, Object>>builder().data(data).build();
-    }
-
-    @GetMapping("/goods/{id}")
-    public BaseResult<Goods> getGoods(@PathVariable Long id) {
-        Goods goods = goodsService.findGoodsById(id);
-        if (goods == null) {
-            // Consider returning a 404 or a specific error structure
-            return BaseResult.<Goods>builder().code(404).message("Goods not found").build();
-        }
-        return BaseResult.<Goods>builder().data(goods).build();
     }
 
     // Existing endpoint, now using GoodsService to list all goods
@@ -71,6 +61,13 @@ public class DatabaseFieldsExampleController {
     @GetMapping("/databaseFields") // Or change path to "/goods" for consistency
     public BaseResult<List<Goods>> getDatabaseFields() {
         List<Goods> goodsList = goodsService.getAllGoods();
+        return BaseResult.<List<Goods>>builder().data(goodsList).build();
+    }
+
+    // GET endpoint to search Goods by keyword
+    @GetMapping("/goods/search")
+    public BaseResult<List<Goods>> searchGoods(@RequestParam(name = "keyword", required = false) String keyword) {
+        List<Goods> goodsList = goodsService.searchGoods(keyword);
         return BaseResult.<List<Goods>>builder().data(goodsList).build();
     }
 }
