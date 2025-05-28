@@ -190,3 +190,99 @@ public class LanguagePackageController {
 # 后期计划
 ##### 支持本地properties、Nacos、数据库配置多语言词条
 ##### 缓存机制优化
+
+## Managing Multi-Language Entity Data
+
+This project supports storing and managing multi-language translations for specific fields of database entities. This is handled through a combination of annotations and services.
+
+### 1. Annotating Entities for Internationalization
+
+To make an entity's fields translatable:
+
+1.  Annotate the entity class with `@com.veystream.annotation.I18nResource`.
+    *   `prefix`: A string prefix for the translation keys (e.g., "Goods").
+    *   `identityKey`: The name of the field in the entity that serves as its unique identifier (e.g., "id").
+    *   `i18nFields`: An array of `@com.veystream.annotation.I18nField` annotations.
+2.  For each field that needs to be translatable, add an `@I18nField(fieldName = "yourFieldName")` within the `i18nFields` array.
+
+**Example (`Goods.java`):**
+
+```java
+package com.veystream.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.veystream.annotation.I18nField;
+import com.veystream.annotation.I18nResource;
+import lombok.Data;
+
+@Data
+@I18nResource(
+        prefix = "Goods",
+        identityKey = "id",
+        i18nFields = {
+            @I18nField(fieldName = "name"),
+            @I18nField(fieldName = "description"),
+            @I18nField(fieldName = "image"),
+})
+@TableName(value = "t_goods")
+public class Goods {
+    private Long id;
+    private String name;        // Translatable
+    private String description; // Translatable
+    private String image;       // Translatable
+}
+```
+
+### 2. Storing and Retrieving Translations
+
+The `com.veystream.service.I18nDataService` (in the `i18n-common` module) provides the core logic for saving and fetching these translations from the `i18n_message` database table.
+
+The `com.veystream.service.GoodsService` (in the `i18n-example` module) demonstrates how to use `I18nDataService` for a specific entity (`Goods`).
+
+**Key Operations (via `GoodsService`):**
+
+*   **Creating an Entity with Translations:**
+    *   Use `goodsService.createGoods(Goods goods, Map<String, Map<String, String>> allFieldTranslations)`.
+    *   The `goods` object should have its default language values set.
+    *   `allFieldTranslations` is a map where:
+        *   Outer key: field name (e.g., "name", "description").
+        *   Inner map: language code (e.g., "en_US", "zh_CN") -> translated text.
+    *   Example payload for translations:
+        ```json
+        {
+            "name": {
+                "en_US": "English Name",
+                "zh_CN": "中文名称"
+            },
+            "description": {
+                "en_US": "English Description",
+                "zh_CN": "中文描述"
+            }
+        }
+        ```
+
+*   **Updating an Entity with Translations:**
+    *   Use `goodsService.updateGoods(Goods goods, Map<String, Map<String, String>> allFieldTranslations)`.
+    *   The `goods` object must have its ID set.
+    *   `allFieldTranslations` structure is the same as for creation.
+
+*   **Retrieving an Entity with All Its Translations:**
+    *   Use `goodsService.getGoodsWithAllTranslations(Long id)`.
+    *   This returns a `Map<String, Object>` containing:
+        *   `"entity"`: The `Goods` object.
+        *   `"translations"`: A map (fieldName -> {languageCode -> translatedText}) holding all translations for the entity's configured i18n fields.
+
+### 3. Controller Endpoints (Example)
+
+The `com.veystream.controller.DatabaseFieldsExampleController` provides REST endpoints to demonstrate these operations:
+
+*   `POST /example/goods`: Creates a new `Goods` item with its translations.
+    *   Request Body: `GoodsCreationPayload` (contains `Goods` entity and translations map).
+*   `PUT /example/goods/{id}`: Updates an existing `Goods` item and its translations.
+    *   Request Body: `GoodsUpdatePayload` (contains `Goods` entity and translations map).
+*   `GET /example/goods/{id}`: Retrieves a `Goods` item along with all its translations.
+*   `GET /example/databaseFields`: Retrieves a list of all `Goods` (default language values, translations applied by `I18nInterceptor` based on current locale and `MessageSource`).
+
+### 4. Translation Data Storage
+
+All dynamic field translations are stored in the `i18n_message` table. The `code` for these translations is typically generated as: `prefix.fieldName.identityKeyValue` (e.g., `Goods.name.123`). The `type` field in `i18n_message` will be set to `"数据库表"` (database table) by default for these entity field translations.
