@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.veystream.dao.I18nMessageMapper">
+
+    <!-- Assuming the findIdentityKeysByTextSearch default method in the interface 
+         uses LambdaQueryWrapper and does not need an XML entry. 
+         If it did, its <select> statement would be here. -->
+
+    <select id="findIdentityKeysByExactTextAndCodePrefix" resultType="long">
+        SELECT DISTINCT CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(code, '.', -1), '.', 1) AS SIGNED) AS entity_id
+        FROM i18n_message
+        WHERE text = #{text}
+          AND language = #{language}
+          AND type = #{type}
+          AND code LIKE CONCAT(#{codePrefix}, '%')
+    </select>
+
+</mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.veystream.dao.GenericEntityDAO">
+
+    <select id="findEntitiesWithFiltersAndIds" resultType="map">
+        SELECT *
+        FROM ${tableName}
+        <where>
+            <if test="ids != null">
+                <if test="ids.isEmpty()">
+                    <!-- If ID set is explicitly empty, it means prior filtering yielded no results -->
+                    AND 1=0
+                </if>
+                <if test="!ids.isEmpty()">
+                    AND ${idColumnName} IN
+                    <foreach item="id" collection="ids" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </if>
+            </if>
+            <if test="conditions != null and !conditions.isEmpty()">
+                <foreach item="condition" collection="conditions">
+                    AND ${condition.fieldName} = #{condition.value}
+                </foreach>
+            </if>
+        </where>
+        <if test="pageQuery != null">
+            LIMIT #{pageQuery.size} OFFSET #{pageQuery.pageOffset} <!-- Assuming PageQuery has getPageOffset() -->
+        </if>
+    </select>
+
+</mapper>

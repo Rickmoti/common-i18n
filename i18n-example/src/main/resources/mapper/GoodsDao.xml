@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.veystream.dao.GoodsDao">
+
+    <!-- Default methods in GoodsDao like findIdsByKeywordAndFields 
+         use LambdaQueryWrapper and do not need XML entries. -->
+
+    <select id="findIdsByExactFieldMatch" resultType="long">
+        SELECT id 
+        FROM t_goods
+        <where>
+            <choose>
+                <when test="fieldName == 'name'">
+                    name = #{value}
+                </when>
+                <when test="fieldName == 'description'">
+                    description = #{value}
+                </when>
+                <!-- Add more <when> blocks here if other specific fields 
+                     in t_goods need to support exact matching via this method.
+                     For fields not listed, this query will currently return nothing 
+                     due to the implicit AND of the <where> and no matching <when>. 
+                     Alternatively, one could add an <otherwise> to error or explicitly 
+                     return no results if fieldName is unsupported. -->
+                <otherwise>
+                    <!-- This makes the query return no results if fieldName is not 'name' or 'description' -->
+                    AND 1=0 
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+</mapper>

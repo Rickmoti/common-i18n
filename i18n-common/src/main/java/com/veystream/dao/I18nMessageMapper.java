@@ -3,6 +3,7 @@ package com.veystream.dao;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Param; // Added for @Param
 import org.springframework.util.CollectionUtils; // Using Spring's CollectionUtils
 
 import java.util.Collections;
@@ -69,4 +70,9 @@ public interface I18nMessageMapper extends BaseMapper<I18nMessage> {
         // 7. 返回ID集合
         return ids;
     }
+
+    Set<Long> findIdentityKeysByExactTextAndCodePrefix(@Param("text") String text,
+                                                       @Param("language") String language,
+                                                       @Param("type") String type,
+                                                       @Param("codePrefix") String codePrefix);
 }

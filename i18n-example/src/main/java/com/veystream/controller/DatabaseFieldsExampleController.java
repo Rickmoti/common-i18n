@@ -2,10 +2,10 @@ package com.veystream.controller;
 
 import com.veystream.dto.GoodsCreationPayload;
 import com.veystream.dto.GoodsUpdatePayload;
+import com.veystream.dto.GoodsSearchCriteriaDTO; // Import the new DTO
 import com.veystream.entity.Goods;
 import com.veystream.http.BaseResult;
-import com.veystream.service.GoodsService; // New import
-// import com.veystream.service.TestService; // May remove if GoodsService replaces its usage for goods
+import com.veystream.service.GoodsService;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -66,8 +66,23 @@ public class DatabaseFieldsExampleController {
 
     // GET endpoint to search Goods by keyword
     @GetMapping("/goods/search")
-    public BaseResult<List<Goods>> searchGoods(@RequestParam(name = "keyword", required = false) String keyword) {
-        List<Goods> goodsList = goodsService.searchGoods(keyword);
+    public BaseResult<List<Goods>> searchGoods(
+            @RequestParam(name = "generalKeyword", required = false) String generalKeyword,
+            @RequestParam(name = "specificName", required = false) String specificName,
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
+            @RequestParam(name = "status", required = false) Integer status,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        
+        GoodsSearchCriteriaDTO criteria = new GoodsSearchCriteriaDTO();
+        criteria.setGeneralKeyword(generalKeyword);
+        criteria.setSpecificName(specificName);
+        criteria.setCategoryId(categoryId);
+        criteria.setStatus(status);
+        criteria.setPage(page);
+        criteria.setSize(size);
+        
+        List<Goods> goodsList = goodsService.searchGoods(criteria);
         return BaseResult.<List<Goods>>builder().data(goodsList).build();
     }
 }

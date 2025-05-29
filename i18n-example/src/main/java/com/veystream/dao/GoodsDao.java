@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.veystream.entity.Goods;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Param; // Ensure this import
 import org.springframework.util.CollectionUtils; // Using Spring's CollectionUtils
 
 import java.util.Collections;
@@ -74,4 +75,7 @@ public interface GoodsDao extends BaseMapper<Goods> {
                         .map(Goods::getId)
                         .collect(Collectors.toSet());
     }
+
+    // Add this method to the GoodsDao interface
+    Set<Long> findIdsByExactFieldMatch(@Param("value") String value, @Param("fieldName") String fieldName);
 }
